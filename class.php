@@ -523,5 +523,12 @@ class IblockFormBitrix extends CBitrixComponent
         echo $string;
     }
 
+    public static function debug($item)
+    {
+        echo '<pre style="background: black; padding: 10px; color: white">';
+        print_r($item);
+        echo '</pre>';
+    }
+
 
 }
