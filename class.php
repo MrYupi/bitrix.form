@@ -135,6 +135,7 @@ class IblockFormBitrix extends CBitrixComponent
                         $this->arResult['ITEMS'][$id]['DB_TYPE'] = $arFields['PROPERTY_TYPE'];
                         break;
                     case 'F':
+                        $this->arResult['ITEMS'][$id]['MULTIPLE']  =  $arFields['MULTIPLE'];
                         $this->arResult['ITEMS'][$id]['TYPE']  = 'file';
                         $this->arResult['ITEMS'][$id]['DB_TYPE'] = $arFields['PROPERTY_TYPE'];
                         break;
@@ -493,6 +494,10 @@ class IblockFormBitrix extends CBitrixComponent
             case 'file':
                 $string .= $html['before'];
                 $string .= '<input name="' . $item['CODE'] . '"';
+                if($item['MULTIPLE'] == 'Y')
+                {
+                    $string .= 'multiple';
+                }
                 foreach ($data as $dKey => $dValue)
                 {
                     $string .= ' ' . $dKey . '="' . $dValue . '" ';
