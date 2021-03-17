@@ -191,6 +191,8 @@ class IblockFormBitrix extends CBitrixComponent
             $this->submitForm();
             if($this->request->isAjaxRequest())
             {
+                $this->arResult['DEBUG']['REQUEST'] = $_REQUEST;
+                $this->arResult['DEBUG']['FILES'] = $_FILES;
                 $this->_app()->RestartBuffer();
                 echo json_encode($this->arResult);
                 die();
@@ -289,7 +291,9 @@ class IblockFormBitrix extends CBitrixComponent
         {
             switch ($item['DB_TYPE'])
             {
+
                 case 'F':
+                    //TODO Multiple
                     $file = $this->request->getFile($item['CODE']);
                     $arProp[$item['CODE']] = $file;
                     break;
@@ -493,7 +497,12 @@ class IblockFormBitrix extends CBitrixComponent
                 break;
             case 'file':
                 $string .= $html['before'];
-                $string .= '<input name="' . $item['CODE'] . '"';
+                $code = $item['CODE'];
+                if($item['MULTIPLE'] == 'Y')
+                {
+                    $code .= '[]';
+                }
+                $string .= '<input name="' . $code . '"';
                 if($item['MULTIPLE'] == 'Y')
                 {
                     $string .= 'multiple';
