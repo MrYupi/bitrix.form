@@ -3,6 +3,7 @@ if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true) die();
 use \Bitrix\Main\Loader;
 use \Bitrix\Main\Application;
 /** @var array $arParams */
+/** @var CMain $APPLICATION */
 class IblockFormBitrix extends CBitrixComponent
 {
 
