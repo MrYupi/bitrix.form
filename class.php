@@ -3,7 +3,6 @@ if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true) die();
 use \Bitrix\Main\Loader;
 use \Bitrix\Main\Application;
 /** @var array $arParams */
-/** @var CMain $APPLICATION */
 class IblockFormBitrix extends CBitrixComponent
 {
 
@@ -135,6 +134,35 @@ class IblockFormBitrix extends CBitrixComponent
                         }
                         $this->arResult['ITEMS'][$id]['DB_TYPE'] = $arFields['PROPERTY_TYPE'];
                         break;
+                    case 'G':
+                        if($arFields['LINK_IBLOCK_ID'])
+                        {
+                            $this->arResult['ITEMS'][$id]['TYPE']  = 'list';
+                            $this->arResult['ITEMS'][$id]['LIST_TYPE'] = $arFields['LIST_TYPE'];
+                            $resList = CIBlockSection::GetList(
+                                [
+                                    'SORT' => 'ASC'
+                                ],
+                                [
+                                    'IBLOCK_ID' => $arFields['LINK_IBLOCK_ID'],
+                                    'ACTIVE' => 'Y',
+                                    'UF_SHOW_IN_FORM' => true
+                                ],
+                                false,
+                                [
+                                    'ID',
+                                    'NAME'
+                                ]
+                            );
+                            while ($arElem = $resList->GetNext())
+                            {
+
+                                $listId = $arElem['ID'];
+                                $this->arResult['ITEMS'][$id]['VALUE'][$listId] = $arElem['NAME'];
+                            }
+                        }
+                        $this->arResult['ITEMS'][$id]['DB_TYPE'] = $arFields['PROPERTY_TYPE'];
+                        break;
                     case 'F':
                         $this->arResult['ITEMS'][$id]['MULTIPLE']  =  $arFields['MULTIPLE'];
                         $this->arResult['ITEMS'][$id]['TYPE']  = 'file';
@@ -182,16 +210,12 @@ class IblockFormBitrix extends CBitrixComponent
 
         $this->_checkModules();
         $this->collectData();
-        //TODO переделать на что то адекватное
-        $GLOBALS['FORMS_COLLECTION']++;
-        $this->arResult['FORM_ID'] = md5($GLOBALS['FORMS_COLLECTION']);
-
-        if ($this->arParams['USE_CAPTCHA'] == 'Y')
+        if($this->arParams['USE_CAPTCHA'] == 'Y')
         {
             $this->arResult["CAPTCHA_CODE"] = htmlspecialcharsbx($this->_app()->CaptchaGetCode());
         }
 
-        if ($this->request['form_id'] == $this->arResult['FORM_ID'] && $this->request->getRequestMethod() == 'POST')
+        if($this->request['submit'] == 'Y' && $this->request->getRequestMethod() == 'POST')
         {
             $this->submitForm();
             if($this->request->isAjaxRequest())
@@ -347,12 +371,19 @@ class IblockFormBitrix extends CBitrixComponent
             switch ($item['DB_TYPE'])
             {
                 case 'E':
+                    //Передаем в почтовый шаблон имена элементов, а не их ИД
+                    $arFields['ONE_STRING_MESSAGE'] .= $item['NAME'] . ': ';
+                    $arFields['ONE_STRING_MESSAGE'] .= $item['VALUE'][$this->request[$item['CODE']]] ? $item['VALUE'][$this->request[$item['CODE']]]  . "\n" :  'Не указано' . "\n";
+                    $arFields[$item['CODE']] = $item['VALUE'][$this->request[$item['CODE']]] ? $item['VALUE'][$this->request[$item['CODE']]] :  'Не указано';
+                    break;
+                case 'G':
+                    //Передаем в почтовый шаблон имена разделов, а не их ИД
                     $arFields['ONE_STRING_MESSAGE'] .= $item['NAME'] . ': ';
                     $arFields['ONE_STRING_MESSAGE'] .= $item['VALUE'][$this->request[$item['CODE']]] ? $item['VALUE'][$this->request[$item['CODE']]]  . "\n" :  'Не указано' . "\n";
                     $arFields[$item['CODE']] = $item['VALUE'][$this->request[$item['CODE']]] ? $item['VALUE'][$this->request[$item['CODE']]] :  'Не указано';
                     break;
                 case 'L':
-                    //Тут коммент что бы мне IDE не подчеркивало),свитч на вырост если че
+                    //Передаем в почтовый шаблон значение варианта списка, а не ИД
                     $arFields['ONE_STRING_MESSAGE'] .= $item['NAME'] . ': ';
                     $arFields['ONE_STRING_MESSAGE'] .= $item['VALUE'][$this->request[$item['CODE']]] ? $item['VALUE'][$this->request[$item['CODE']]]  . "\n" :  'Не указано' . "\n";
                     $arFields[$item['CODE']] = $item['VALUE'][$this->request[$item['CODE']]] ? $item['VALUE'][$this->request[$item['CODE']]] :  'Не указано';
