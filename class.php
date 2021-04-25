@@ -210,13 +210,15 @@ class IblockFormBitrix extends CBitrixComponent
 
         $this->_checkModules();
         $this->collectData();
+        //TODO переделать на что то адекватное
+        $GLOBALS['FORMS_COLLECTION']++;
+        $this->arResult['FORM_ID'] = md5($GLOBALS['FORMS_COLLECTION']);
         if($this->arParams['USE_CAPTCHA'] == 'Y')
         {
             $this->arResult["CAPTCHA_CODE"] = htmlspecialcharsbx($this->_app()->CaptchaGetCode());
         }
 
-        if($this->request['submit'] == 'Y' && $this->request->getRequestMethod() == 'POST')
-        {
+        if ($this->request['form_id'] == $this->arResult['FORM_ID'] && $this->request->getRequestMethod() == 'POST')        {
             $this->submitForm();
             if($this->request->isAjaxRequest())
             {
@@ -470,6 +472,10 @@ class IblockFormBitrix extends CBitrixComponent
                 $string .= 'data-required="' . $item['REQUIRED'] . '"';
                 $string .= 'data-validate="' . $item['VALIDATE'] . '"';
                 $string .= '>';
+                if($item['EMPTY_VALUE'])
+                {
+                    $string .= ' <option value="none" hidden="">' . $item['EMPTY_VALUE'] . '</option>';
+                }
                 foreach ($item['VALUE'] as $keyValue => $nameValue)
                 {
                     $checked = false;
