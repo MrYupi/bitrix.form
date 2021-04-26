@@ -72,12 +72,13 @@ class IblockFormBitrix extends CBitrixComponent
                         if($arFields['USER_TYPE'] == 'HTML')
                         {
                             $this->arResult['ITEMS'][$id]['TYPE']  = 'textarea';
+                            $this->arResult['ITEMS'][$id]['DB_TYPE'] = 'HTML';
                         }
                         else
                         {
                             $this->arResult['ITEMS'][$id]['TYPE']  = 'text';
+                            $this->arResult['ITEMS'][$id]['DB_TYPE'] = $arFields['PROPERTY_TYPE'];
                         }
-                        $this->arResult['ITEMS'][$id]['DB_TYPE'] = $arFields['PROPERTY_TYPE'];
                         break;
                     case 'L':
                         if($arFields['LIST_TYPE'] == 'C')
@@ -328,6 +329,14 @@ class IblockFormBitrix extends CBitrixComponent
                     $file = $this->request->getFile($item['CODE']);
                     $arProp[$item['CODE']] = $file;
                     break;
+                case 'HTML':
+                    $arProp[$item['CODE']] = [
+                        'VALUE' => [
+                            'TEXT' => $this->request[$item['CODE']],
+                            'TYPE' => 'html'
+                        ]
+                    ];
+                    break;
                 default:
                     if(in_array($item['CODE'], $this->arParams['FIELDS_GENERATE_NAME']))
                     {
@@ -350,6 +359,7 @@ class IblockFormBitrix extends CBitrixComponent
         {
             $arFields['PREVIEW_TEXT'] = $this->request['PREVIEW_TEXT'];
         }
+        $this->arResult['DEBUG']['FIELDS'] = $arFields;
         $this->elemID = $el->Add($arFields);
         if(!$this->elemID)
         {
