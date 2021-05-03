@@ -221,10 +221,11 @@ class IblockFormBitrix extends CBitrixComponent
 
         if ($this->request['form_id'] == $this->arResult['FORM_ID'] && $this->request->getRequestMethod() == 'POST')        {
             $this->submitForm();
+
             if($this->request->isAjaxRequest())
             {
-                $this->arResult['DEBUG']['REQUEST'] = $_REQUEST;
-                $this->arResult['DEBUG']['FILES'] = $_FILES;
+
+                $this->arResult['JS_SUCCESS_ID'] = '#' . $this->arParams['JS_SUCCESS_ID'];
                 $this->_app()->RestartBuffer();
                 echo json_encode($this->arResult);
                 die();
