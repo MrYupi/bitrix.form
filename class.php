@@ -73,12 +73,13 @@ class IblockFormBitrix extends CBitrixComponent
                         if($arFields['USER_TYPE'] == 'HTML')
                         {
                             $this->arResult['ITEMS'][$id]['TYPE']  = 'textarea';
+                            $this->arResult['ITEMS'][$id]['DB_TYPE'] = 'HTML';
                         }
                         else
                         {
                             $this->arResult['ITEMS'][$id]['TYPE']  = 'text';
+                            $this->arResult['ITEMS'][$id]['DB_TYPE'] = $arFields['PROPERTY_TYPE'];
                         }
-                        $this->arResult['ITEMS'][$id]['DB_TYPE'] = $arFields['PROPERTY_TYPE'];
                         break;
                     case 'L':
                         if($arFields['LIST_TYPE'] == 'C')
@@ -505,6 +506,10 @@ class IblockFormBitrix extends CBitrixComponent
                 $string .= 'data-required="' . $item['REQUIRED'] . '"';
                 $string .= 'data-validate="' . $item['VALIDATE'] . '"';
                 $string .= '>';
+                if($item['EMPTY_VALUE'])
+                {
+                    $string .= ' <option value="none" hidden="">' . $item['EMPTY_VALUE'] . '</option>';
+                }
                 foreach ($item['VALUE'] as $keyValue => $nameValue)
                 {
                     $checked = false;
