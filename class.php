@@ -3,6 +3,7 @@ if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true) die();
 use \Bitrix\Main\Loader;
 use \Bitrix\Main\Application;
 /** @var array $arParams */
+/** @var CMain $APPLICATION */
 class IblockFormBitrix extends CBitrixComponent
 {
 
@@ -214,12 +215,14 @@ class IblockFormBitrix extends CBitrixComponent
         //TODO переделать на что то адекватное
         $GLOBALS['FORMS_COLLECTION']++;
         $this->arResult['FORM_ID'] = md5($GLOBALS['FORMS_COLLECTION']);
-        if($this->arParams['USE_CAPTCHA'] == 'Y')
+
+        if ($this->arParams['USE_CAPTCHA'] == 'Y')
         {
             $this->arResult["CAPTCHA_CODE"] = htmlspecialcharsbx($this->_app()->CaptchaGetCode());
         }
 
-        if ($this->request['form_id'] == $this->arResult['FORM_ID'] && $this->request->getRequestMethod() == 'POST')        {
+        if ($this->request['form_id'] == $this->arResult['FORM_ID'] && $this->request->getRequestMethod() == 'POST')
+        {
             $this->submitForm();
 
             if($this->request->isAjaxRequest())
@@ -253,6 +256,7 @@ class IblockFormBitrix extends CBitrixComponent
                 $this->arResult['ERROR'][] = 'Не верно введен защитный код';
             }
         }
+        $this->checkGoogleCaptcha();
         foreach ($this->arResult['ITEMS'] as &$item)
         {
             if($item['REQUIRED'] == 'Y' || in_array($item['CODE'], $this->arParams['REQUIRED']))
@@ -327,8 +331,27 @@ class IblockFormBitrix extends CBitrixComponent
             {
 
                 case 'F':
-                    //TODO Multiple
-                    $file = $this->request->getFile($item['CODE']);
+                    if($item['MULTIPLE'] == 'Y')
+                    {
+                        $tmpArray = $this->request->getFile($item['CODE']);
+                        $file = [];
+                        foreach ($tmpArray['name'] as $i => $f)
+                        {
+                            if(!$tmpArray['error'][$i])
+                            {
+                                $file[] = [
+                                    'name' => $f,
+                                    'size' => $tmpArray['size'][$i],
+                                    'tmp_name' => $tmpArray['tmp_name'][$i],
+                                    'type' => $tmpArray['type'][$i],
+                                ];
+                            }
+                        }
+                    }
+                    else
+                    {
+                        $file = $this->request->getFile($item['CODE']);
+                    }
                     $arProp[$item['CODE']] = $file;
                     break;
                 case 'HTML':
@@ -361,7 +384,6 @@ class IblockFormBitrix extends CBitrixComponent
         {
             $arFields['PREVIEW_TEXT'] = $this->request['PREVIEW_TEXT'];
         }
-        $this->arResult['DEBUG']['FIELDS'] = $arFields;
         $this->elemID = $el->Add($arFields);
         if(!$this->elemID)
         {
@@ -594,6 +616,39 @@ class IblockFormBitrix extends CBitrixComponent
     private function reloadCaptcha()
     {
         $this->arResult["CAPTCHA_CODE"] = htmlspecialcharsbx($this->_app()->CaptchaGetCode());
+    }
+
+    private function checkGoogleCaptcha()
+    {
+        if($this->arParams['USE_GOOGLE_CAPTCHA'] == 'Y' &&
+            $this->arParams['GOOGLE_PUBLIC'] &&
+            $this->arParams['GOOGLE_SECRET']
+        )
+        {
+            $captchaData = [
+                'secret' => $this->arParams['GOOGLE_SECRET'],
+                'response' =>  $this->request['g-recaptcha-response'],
+            ];
+            $opts = [
+                'http' => [
+                    'method' => 'POST',
+                    'header' => "Content-Type: application/x-www-form-urlencoded\r\n",
+                    'content' => http_build_query($captchaData)
+                ]
+            ];
+            $context = stream_context_create($opts);
+            $captchaRes = json_decode(file_get_contents(
+                'https://www.google.com/recaptcha/api/siteverify',
+                false,
+                $context
+            ));
+            if(!$captchaRes->success)
+            {
+                $this->arResult['STATUS'] = 'ERROR';
+                $this->arResult['ERROR_FIELDS'][] = 'g-recaptcha-response';
+                $this->arResult['ERROR'][] = 'Не пройдена защита от роботов';
+            }
+        }
     }
 
     public static function debug($item)
