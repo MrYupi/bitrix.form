@@ -3,6 +3,7 @@ if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true) die();
 use \Bitrix\Main\Loader;
 use \Bitrix\Main\Application;
 /** @var array $arParams */
+/** @var CMain $APPLICATION */
 class IblockFormBitrix extends CBitrixComponent
 {
 
@@ -72,13 +73,12 @@ class IblockFormBitrix extends CBitrixComponent
                         if($arFields['USER_TYPE'] == 'HTML')
                         {
                             $this->arResult['ITEMS'][$id]['TYPE']  = 'textarea';
-                            $this->arResult['ITEMS'][$id]['DB_TYPE'] = 'HTML';
                         }
                         else
                         {
                             $this->arResult['ITEMS'][$id]['TYPE']  = 'text';
-                            $this->arResult['ITEMS'][$id]['DB_TYPE'] = $arFields['PROPERTY_TYPE'];
                         }
+                        $this->arResult['ITEMS'][$id]['DB_TYPE'] = $arFields['PROPERTY_TYPE'];
                         break;
                     case 'L':
                         if($arFields['LIST_TYPE'] == 'C')
@@ -214,12 +214,14 @@ class IblockFormBitrix extends CBitrixComponent
         //TODO переделать на что то адекватное
         $GLOBALS['FORMS_COLLECTION']++;
         $this->arResult['FORM_ID'] = md5($GLOBALS['FORMS_COLLECTION']);
-        if($this->arParams['USE_CAPTCHA'] == 'Y')
+
+        if ($this->arParams['USE_CAPTCHA'] == 'Y')
         {
             $this->arResult["CAPTCHA_CODE"] = htmlspecialcharsbx($this->_app()->CaptchaGetCode());
         }
 
-        if ($this->request['form_id'] == $this->arResult['FORM_ID'] && $this->request->getRequestMethod() == 'POST')        {
+        if ($this->request['form_id'] == $this->arResult['FORM_ID'] && $this->request->getRequestMethod() == 'POST')
+        {
             $this->submitForm();
             if($this->request->isAjaxRequest())
             {
@@ -482,10 +484,6 @@ class IblockFormBitrix extends CBitrixComponent
                 $string .= 'data-required="' . $item['REQUIRED'] . '"';
                 $string .= 'data-validate="' . $item['VALIDATE'] . '"';
                 $string .= '>';
-                if($item['EMPTY_VALUE'])
-                {
-                    $string .= ' <option value="none" hidden="">' . $item['EMPTY_VALUE'] . '</option>';
-                }
                 foreach ($item['VALUE'] as $keyValue => $nameValue)
                 {
                     $checked = false;
