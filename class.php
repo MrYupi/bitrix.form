@@ -221,11 +221,13 @@ class IblockFormBitrix extends CBitrixComponent
 
         if ($this->request['form_id'] == $this->arResult['FORM_ID'] && $this->request->getRequestMethod() == 'POST')        {
             $this->submitForm();
+
             if($this->request->isAjaxRequest())
             {
-                $this->arResult['DEBUG']['REQUEST'] = $_REQUEST;
-                $this->arResult['DEBUG']['FILES'] = $_FILES;
+
+                $this->arResult['JS_SUCCESS_ID'] = '#' . $this->arParams['JS_SUCCESS_ID'];
                 $this->_app()->RestartBuffer();
+                $this->reloadCaptcha();
                 echo json_encode($this->arResult);
                 die();
             }
@@ -587,6 +589,11 @@ class IblockFormBitrix extends CBitrixComponent
         }
 
         echo $string;
+    }
+
+    private function reloadCaptcha()
+    {
+        $this->arResult["CAPTCHA_CODE"] = htmlspecialcharsbx($this->_app()->CaptchaGetCode());
     }
 
     public static function debug($item)
