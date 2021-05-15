@@ -6,7 +6,9 @@ use \Bitrix\Main\Application;
 /** @var CMain $APPLICATION */
 class IblockFormBitrix extends CBitrixComponent
 {
-
+    /**
+     * @var bool $elemID
+     */
     private $elemID = false;
 
     private function _checkModules()
