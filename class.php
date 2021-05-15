@@ -104,6 +104,11 @@ class IblockFormBitrix extends CBitrixComponent
                         $this->arResult['ITEMS'][$id]['VALUE'] = [];
                         while($enumFields = $enumRes->GetNext())
                         {
+
+                            if($enumFields['DEF'] == 'Y' && !$this->arResult['ITEMS'][$id]['DEFAULT_VALUE'])
+                            {
+                                $this->arResult['ITEMS'][$id]['DEFAULT_VALUE'] = $enumFields['ID'];
+                            }
                             $enumId = $enumFields['ID'];
                             $this->arResult['ITEMS'][$id]['VALUE'][$enumId] = $enumFields['VALUE'];
 
