@@ -51,7 +51,7 @@ class IblockFormBitrix extends CBitrixComponent
         );
         while($arFields = $res->GetNext())
         {
-            $id = $arFields['ID'];
+            $id = $arFields['CODE'];
             $this->arResult['ITEMS'][$id] = [
                 'CODE' => $arFields['CODE'],
                 'NAME' => $arFields['NAME'],
